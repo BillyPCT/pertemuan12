@@ -11,8 +11,8 @@ class Edit extends StatefulWidget {
 }
 
 class _EditState extends State<Edit> {
-  final _formkey = Globalkey<FormState>();
-}
+  final _formkey = GlobalKey<FormState>();
+    }
 
 var title = TextEditingController();
 var content = TextEditingController();
@@ -27,16 +27,17 @@ var content = TextEditingController();
  //Http to get detail data
  Future _getData() async {
   try {
-    final response = await http.get(Uri.parse("http://192,168.1.27/note_app/details.php?id='${widget.id}'"));
+    final response = await http.get(Uri.parse(
+      "http://192,168.1.27/note_app/details.php?id='${widget.id}'"));
   
   // if response succesful
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
 
-    setState(() {
+    setState() {
       title =TextEditingController(text: data['title']);
       content =TextEditingController(text: data['content']);
-    });
+    };
   }
   } catch (e) {
     print(e);
@@ -49,6 +50,8 @@ var content = TextEditingController();
       Uri.parse("http://192.168.1.27/note_app/delete.php"),
       body: {
         "id": widget.id,
+        "title": title.text,
+        "content": content.text,
       },
     ).then((value) {
       var data = jsonDecode(value.body);
@@ -81,11 +84,11 @@ var content = TextEditingController();
                     content: const Text('are you sure what the delete this?'),
                     actions: <Widget>[
                       ElevatedButton(
-                        child: const Icon(Icon.cancel),
+                        child: const Icon(Icons.cancel),
                         onPressed: () => Navigator.of(context).pop(),
                         ),
                         ElevatedButton(
-                        child: const Icon(Icon.check_circle),
+                        child: const Icon(Icons.check_circle),
                         onPressed: () => _onDelete(context,)
                         ),
                     ],
@@ -114,9 +117,81 @@ var content = TextEditingController();
         ),
         const SizedBox(height: 5),
         TextFormField(
-          controller: tittle,
+          controller: title,
           decoration: InputDecoration(
             hintText: "Type Note Title",
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0),
             ),
+            fillColor: Colors.white,
+            filled: true),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      validator: (value) {
+  if (value!.isEmpty) {
+    return 'Note Title is Required!';
+  }
+  return null;
+},
+),
+const SizedBox(height: 20),
+const Text(
+  'Content',
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  ),
+),const SizedBox(height: 5),
+TextFormField(
+  controller: content,
+  keyboardType: TextInputType.multiline,
+  minLines: 5,
+  maxLines: null,
+  decoration: InputDecoration(
+    : 'Type Note Content',
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    fillColor: Colors.white,
+    filled: true),
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+    validator: (value) {
+      if (value!.isEmpty) {
+        return 'Note Content is Required!';
+      }
+      return null;
+    },
+),
+const SizedBox(height: 15),
+ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+  ),
+  child: const Text(
+    "Submit",
+    style: TextStyle(color: Colors.white),
+  ),
+  onPressed: () {
+    //validate
+    if (_formKey.currentState!.validate()) {
+      //send data to database with this method
+      _onUpdate(context);
+    }
+  },
+)
+],
+),
+),
+),
+);
+}
+
+
 
